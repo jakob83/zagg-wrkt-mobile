@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
+import { App } from '@capacitor/app';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -135,6 +136,49 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  useEffect(() => {
+    // Listen for deep link opens while app is running
+    const remove = App.addListener('appUrlOpen', ({ url }) => {
+      try {
+        const u = new URL(url);
+        if (u.protocol === 'com.zaggathletics:') {
+          const token = u.searchParams.get('token');
+          const error = u.searchParams.get('error');
+
+          if (error) {
+            console.error(error);
+            // Show error message if needed
+            return;
+          }
+
+          if (token) {
+            // Save token (use Preferences if you want secure native storage)
+            localStorage.setItem('token', token);
+            // Navigate into the app
+            navigate('/');
+          }
+        }
+      } catch (e) {
+        console.error('Bad deep link:', e);
+      }
+    });
+
+    // Handle "cold start": app was killed and opened via deep link
+    App.getLaunchUrl().then(launch => {
+      if (launch?.url) {
+        const u = new URL(launch.url);
+        const token = u.searchParams.get('token');
+        if (token) {
+          localStorage.setItem('token', token);
+          navigate('/');
+        }
+      }
+    });
+
+    return () => {
+      remove.remove();
+    };
+  }, [navigate]);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -147,7 +191,6 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
       const token = await response.json();
-      console.log(token);
       if (!response.ok || !token) {
         setError(token.error || 'Login failed');
         setLoading(false);
@@ -164,7 +207,7 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     window.open(
-      `${import.meta.env.VITE_API_URL}/auth/google`,
+      `${import.meta.env.VITE_API_URL}/auth/google?client=mobile`,
       '_blank',
       'width=500,height=600'
     );
@@ -178,7 +221,6 @@ const Login = () => {
         console.log(error);
         setError(error);
       }
-      console.log(token);
       if (token) {
         localStorage.setItem('token', token);
         navigate('/');

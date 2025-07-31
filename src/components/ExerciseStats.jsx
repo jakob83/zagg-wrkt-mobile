@@ -382,7 +382,6 @@ const ExerciseStats = () => {
   const handleExerciseClick = exercise => {
     setActiveExercise(exercise);
     setStats(null);
-    console.log(exercise);
     fetchStats(exercise);
   };
 

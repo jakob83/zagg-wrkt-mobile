@@ -87,7 +87,6 @@ const Verify = () => {
             method: 'POST',
           }
         );
-        console.log(res);
         if (res.ok) {
           setStatus('success');
         } else {

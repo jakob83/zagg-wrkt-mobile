@@ -39,10 +39,10 @@ export const UserProvider = ({ children }) => {
           setUser(user);
         }
       } catch (error) {
+        console.log(error);
         navigate('/login');
       }
     } else {
-      console.log('nav to login');
       navigate('/login');
     }
   };

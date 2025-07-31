@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ZaggAthletics</string>
+    <string name="title_activity_main">ZaggAthletics</string>
+    <string name="package_name">com.zaggathletics</string>
+    <string name="custom_url_scheme">com.zaggathletics</string>
+</resources>

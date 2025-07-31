@@ -953,7 +953,6 @@ const WorkoutDetail = () => {
         return e.returnValue;
       }
     };
-    console.log('Hi');
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
