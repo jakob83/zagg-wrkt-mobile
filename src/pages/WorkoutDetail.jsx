@@ -32,7 +32,7 @@ const fadeInScale = keyframes`
 
 const Container = styled.div`
   padding: 1rem;
-  padding-bottom: 80px;
+  padding-bottom: 70px;
   min-height: 100vh;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   position: relative;
@@ -111,7 +111,7 @@ const ExerciseName = styled.h3`
 const SetList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.5rem;
 `;
 
 const SetRow = styled.div`
@@ -155,20 +155,112 @@ const Label = styled.span`
 `;
 
 const AddSetButton = styled.button`
-  background: ${props => props.colors.main};
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  font-size: 1rem;
+  background: ${props => props.colors.main}20;
+  border: 1px solid ${props => props.colors.main}40;
+  color: ${props => props.colors.main};
+  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 1rem;
-  width: 100%;
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   &:hover {
+    background: ${props => props.colors.main}30;
+    border-color: ${props => props.colors.main}60;
+    color: ${props => props.colors.main};
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px ${props => props.colors.main}20;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const AddExerciseButton = styled.button`
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 2px solid ${props => props.colors?.main || '#6366f1'}40;
+  color: white;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2rem auto 0 auto;
+  display: block;
+  width: fit-content;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      ${props => props.colors?.main || '#6366f1'}20,
+      transparent
+    );
+    transition: left 0.5s ease;
+  }
+
+  &:hover {
+    border-color: ${props => props.colors?.main || '#6366f1'}80;
+    background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.3),
+      0 0 15px ${props => props.colors?.main || '#6366f1'}30;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const FinishButton = styled.button`
+  background: linear-gradient(
+    135deg,
+    ${props => props.colors?.main || '#4CAF50'} 0%,
+    ${props => props.colors?.secondary || '#45a049'} 100%
+  );
+  border: none;
+  color: white;
+  padding: 1.5rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  margin-top: 4rem;
+
+  &:hover {
+    background: linear-gradient(135deg, #45a049 0%, #4caf50 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.4);
   }
 
   &:active {
@@ -603,7 +695,6 @@ const WorkoutDetail = () => {
             }
           });
         });
-
         if (!setData) return;
 
         const res = await fetch(
@@ -633,7 +724,7 @@ const WorkoutDetail = () => {
     } finally {
       setIsSaving(false);
     }
-  }, []);
+  }, [isSaving, pendingChanges, workout, user.id]);
 
   const handleDeleteWorkout = async () => {
     try {
@@ -703,15 +794,21 @@ const WorkoutDetail = () => {
       }
 
       const exercises = await response.json();
-      for (let i = exercises.length - 1; i >= 0; i--) {
+      let isNext = false;
+      for (let i = 0; i < exercises.length; i++) {
         const exercise = exercises[i];
-        if (exercise.template.id === templateId && exercise.id !== currExId) {
-          if (exercise.sets && exercise.sets.length > 0) {
-            exercise.sets = [...exercise.sets].sort(
-              (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-            );
+        if (isNext) {
+          if (exercise.template.id === templateId) {
+            if (exercise.sets && exercise.sets.length > 0) {
+              exercise.sets = [...exercise.sets].sort(
+                (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+              );
+            }
+            return exercise;
           }
-          return exercise;
+        }
+        if (exercise.id == currExId) {
+          isNext = true;
         }
       }
       return null;
@@ -1048,11 +1145,11 @@ const WorkoutDetail = () => {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                   <g
                     id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   ></g>
                   <g id="SVGRepo_iconCarrier">
                     <path d="M5.755,20.283,4,8H20L18.245,20.283A2,2,0,0,1,16.265,22H7.735A2,2,0,0,1,5.755,20.283ZM21,4H16V3a1,1,0,0,0-1-1H9A1,1,0,0,0,8,3V4H3A1,1,0,0,0,3,6H21a1,1,0,0,0,0-2Z"></path>
@@ -1298,19 +1395,32 @@ const WorkoutDetail = () => {
                   onClick={() => handleAddSet(exercise.id)}
                   colors={colors}
                 >
-                  + Add Set
+                  <span role="img" aria-label="add set">
+                    ➕
+                  </span>
+                  Add Set
                 </AddSetButton>
               </SetList>
             </ExerciseCard>
           ))}
-          <AddSetButton
+          <AddExerciseButton
             onClick={() => setShowExercisePicker(true)}
             colors={colors}
           >
-            + Add Exercise
-          </AddSetButton>
+            <span role="img" aria-label="add exercise">
+              🏋️
+            </span>
+            Add Exercise
+          </AddExerciseButton>
         </ExerciseList>
       </ContentWrapper>
+
+      <FinishButton onClick={() => navigate('/')} colors={colors}>
+        <span role="img" aria-label="finish">
+          ✅
+        </span>
+        Finish Workout
+      </FinishButton>
 
       {showExercisePicker && (
         <ExercisePickerOverlay>
